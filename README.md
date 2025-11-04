@@ -21,5 +21,16 @@ sudo uv run python main.py --iface eth0
 - `--iface`：指定要发送 DHCP 报文的网卡。若省略，默认使用 Scapy 配置的接口。
 - `--timeout`：等待服务器响应的超时时间（默认 5 秒）。
 - `--retries`：失败后的重试次数（默认 3 次）。
+- `--clients`：模拟的 DHCP 客户端数量。大于 1 时将自动并发执行多次握手（默认 1）。
+- `--concurrency`：并发握手的最大数量，仅在 `--clients`>1 时生效（默认 10）。
+- `--mac-prefix`：为模拟客户端生成 MAC 时使用的前缀（例如 `02:00:00`）。
+- `--seed`：生成客户端 MAC 时使用的随机种子，便于复现。
+- `--client-mac`：单客户端模式下强制使用指定的 MAC 地址。
+
+示例：并发模拟 200 个客户端对 DHCP 服务器进行压测
+
+```bash
+sudo uv run python main.py --iface eth0 --clients 200 --concurrency 50 --mac-prefix 02:de:ad:be
+```
 
 成功执行后，会打印服务器分配的 IP、租期、路由、DNS 等信息；若失败，会输出失败原因。

@@ -39,6 +39,7 @@ def perform_handshake(
     *,
     timeout: float = 5.0,
     retries: int = 3,
+    client_mac: Optional[str] = None,
 ) -> DhcpLease:
     """
     Perform the DHCP discover → offer → request → ack handshake.
@@ -51,20 +52,25 @@ def perform_handshake(
         Seconds to wait for each server response.
     retries:
         Number of times to retry the discover/offer cycle before giving up.
+    client_mac:
+        Optional MAC address to use for the DHCP frames. If omitted, the
+        interface hardware address is used.
     """
     _ensure_root_privileges()
     conf.checkIPaddr = False
     iface = interface or conf.iface
     if not iface:
-        raise DhcpHandshakeError("Missing network interface; pass --iface or configure Scapy.")
+        raise DhcpHandshakeError(
+            "Missing network interface; pass --iface or configure Scapy."
+        )
 
-    client_mac = get_if_hwaddr(iface)
+    mac_address = client_mac or get_if_hwaddr(iface)
     for attempt in range(retries):
         xid = random.randint(0, 0xFFFFFFFF)
         offer = _send_and_receive(
             _build_dhcp_packet(
                 message_type="discover",
-                mac_address=client_mac,
+                mac_address=mac_address,
                 xid=xid,
             ),
             iface=iface,
@@ -82,7 +88,7 @@ def perform_handshake(
 
         request_packet = _build_dhcp_packet(
             message_type="request",
-            mac_address=client_mac,
+            mac_address=mac_address,
             xid=xid,
             requested_ip=requested_ip,
             server_id=server_id,
@@ -195,7 +201,9 @@ def _normalize_dns(value):
 def _ensure_root_privileges():
     if hasattr(os, "geteuid"):
         if os.geteuid() != 0:
-            raise PermissionError("Scapy DHCP handshake must run as root or with CAP_NET_RAW.")
+            raise PermissionError(
+                "Scapy DHCP handshake must run as root or with CAP_NET_RAW."
+            )
 
 
 def _mac_to_chaddr(mac_address: str) -> bytes:

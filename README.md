@@ -26,6 +26,7 @@ sudo uv run python main.py --iface eth0
 - `--mac-prefix`：为模拟客户端生成 MAC 时使用的前缀（例如 `02:00:00`）。
 - `--seed`：生成客户端 MAC 时使用的随机种子，便于复现。
 - `--client-mac`：单客户端模式下强制使用指定的 MAC 地址。
+- `--list-ifaces`：仅显示 Scapy 识别到的网卡列表，然后退出。
 
 示例：并发模拟 200 个客户端对 DHCP 服务器进行压测
 

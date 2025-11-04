@@ -4,6 +4,7 @@ from typing import Optional
 
 from dhcp_clients.client import DhcpHandshakeError, DhcpLease, perform_handshake
 from dhcp_clients.simulator import SimulationResult, simulate_dhcp_clients
+from scapy.all import show_interfaces
 
 
 def main(argv: Optional[list[str]] = None) -> int:
@@ -51,9 +52,17 @@ def main(argv: Optional[list[str]] = None) -> int:
         type=int,
         help="optional seed when deriving simulated MAC addresses",
     )
+    parser.add_argument(
+        "--list-ifaces",
+        action="store_true",
+        help="show Scapy-detected interfaces and exit",
+    )
     args = parser.parse_args(argv)
 
     try:
+        if args.list_ifaces:
+            show_interfaces()
+            return 0
         if args.clients <= 1:
             if args.clients <= 0:
                 parser.error("--clients must be positive.")
